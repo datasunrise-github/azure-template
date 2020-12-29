@@ -9,20 +9,26 @@ gpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/azu
 
 sudo yum install azure-cli -y
 
-echo "Azure CLI was successfully installed" >> /home/test.txt
+logBeginAct "Azure CLI was successfully installed"
 
 az login --identity -u $1
 
-echo "Azure successful login" >> /home/test.txt
+logBeginAct "Azure successful login"
 
 sudo yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
 sudo yum install jq -y
 
-echo "jq was successfully installed" >> /home/test.txt
+logBeginAct "jq was successfully installed"
 
 sudo yum install java-1.8.0-openjdk -y
 
 sudo yum install unixODBC -y
 
-echo "unixODBC install OK" >> /home/test.txt 
+logBeginAct "unixODBC install OK"
+
+curl https://packages.microsoft.com/config/rhel/8/prod.repo > /etc/yum.repos.d/mssql-release.repo
+
+sudo ACCEPT_EULA=Y yum install msodbcsql17 -y
+
+logBeginAct "mssqlODBCdriver install OK"
