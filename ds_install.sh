@@ -100,6 +100,8 @@ logBeginAct "Setting up license..."
 
 ds_connect $ds_admin_password
 
+echo $ds_license
+
 setupDSLicense $ds_license
   
 RETVAL1=$?
