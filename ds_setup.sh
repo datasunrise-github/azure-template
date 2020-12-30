@@ -47,15 +47,9 @@ cd /opt/datasunrise
 setupProxy() {
 
   cd /opt/datasunrise/cmdline
-  
-  if [ "$3" = "mysql" ]; then
-                            
-    XTRA_ARGS="-ssl"
-  
-  fi
 
-  ./executecommand.sh addInstancePlus -name $1 -dbPort $2 -dbType $3 -dbHost $4 -database $5 -login $6 -password $7 -proxyHost `hostname -I` -proxyPort $8 -savePassword ds $XTRA_ARGS
-
+  ./executecommand.sh addInstancePlus -name $1 -dbPort $2 -dbType $3 -dbHost $4 -database $5 -login $6 -password $7 -proxyHost `hostname -I` -proxyPort $8 -savePassword ds 
+  
 }
 
 setupDSLicense() {
