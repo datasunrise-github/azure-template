@@ -64,7 +64,7 @@ setupDSLicense() {
   
   echo "$1"
 
-  echo "$1" > /tmp/appfirewall.reg  
+  echo '$1' > /tmp/appfirewall.reg  
   
   sudo mv /tmp/appfirewall.reg /opt/datasunrise/
   
