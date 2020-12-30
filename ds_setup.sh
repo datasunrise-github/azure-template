@@ -61,6 +61,8 @@ setupProxy() {
 setupDSLicense() {
 
   touch /tmp/appfirewall.reg
+  
+  echo "$1"
 
   echo "$1" > /tmp/appfirewall.reg  
   
