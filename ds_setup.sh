@@ -127,7 +127,7 @@ copyProxies() {
                
 }
 
-change_params () {
+changeParams () {
 
   dsversion=`/opt/datasunrise/AppBackendService VERSION`
   
