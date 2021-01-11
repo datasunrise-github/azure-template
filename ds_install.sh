@@ -70,8 +70,6 @@ logEndAct "Exit code after installation - $RETVAL"
 
 logBeginAct "DS_setup execution"
 
-changeParams $ds_root $AF_HOME
-
 resetDict $ds_root $AF_HOME $dictionary_type $ds_database_host $ds_database_port $dictionary_name $ds_database_login $ds_database_password $ds_server_name
 
 RETVAL=$?
@@ -115,6 +113,8 @@ setDictionaryLicense $ds_root $AF_HOME
 RETVAL1=$?
 
 logEndAct "Exit code after license is set - $RETVAL1"
+
+changeParams $ds_root $AF_HOME
 
 logBeginAct "Checking existing instances..."
 
