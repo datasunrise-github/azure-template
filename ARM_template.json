@@ -43,7 +43,7 @@
     },
     "vmSize": {
         "type": "string",
-        "defaultValue": "Standard_F1",
+        "defaultValue": "Standard_F2",
         "metadata": {
             "description": "Size of the Virtual Machine. Depends on the Location and Availability Set"
         }
@@ -198,7 +198,7 @@
         },
         "loadBalancerName": "DSLoadBalancer",
         "location": "[resourceGroup().location]",
-        "managedIdentityName": "User-assigned-identity3",
+        "managedIdentityName": "User-assigned-identity",
         "natBackendPort": 11000,
         "natPoolName": "[concat(variables('vmScaleSetName'), 'natpool')]",
         "natPool2Name": "[concat(variables('vmScaleSetName'), 'nat2pool')]",
@@ -206,7 +206,6 @@
         "natStartPort": 11000,
         "natEndPort": 11001,
         "networkInterfaceName": "[concat(variables('vmNameScale'),'NetInt')]",
-        "networkSecurityGroupNameLoadBalancer" : "Test",
         "publicIPAddressName": "[concat(parameters('dnsLabelPrefix'), '-ip')]",
         "resourceGroupName": "[resourceGroup().name]",
         "serverName": "PostgreSQServer",
