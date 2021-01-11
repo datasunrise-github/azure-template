@@ -126,3 +126,21 @@ copyProxies() {
   logEndAct "Proxies copied."
                
 }
+
+change_params () {
+
+  dsversion=`/opt/datasunrise/AppBackendService VERSION`
+  
+  if [ '6.3.1.99999' = "`echo -e "6.3.1.99999\n$dsversion" | sort -V | head -n1`" ] ; then
+                        
+    echo "DS version $dsversion" >> /home/test.txt 
+                  
+  else
+  
+    sudo LD_LIBRARY_PATH="$1":"$1/lib":$LD_LIBRARY_PATH AF_HOME="$2" AF_CONFIG="$2" $1/AppBackendService CHANGE_SETTINGS MaxCoreMemoryForTerminate=5000
+    
+    sudo LD_LIBRARY_PATH="$1":"$1/lib":$LD_LIBRARY_PATH AF_HOME="$2" AF_CONFIG="$2" $1/AppBackendService CHANGE_SETTINGS MaxBackendMemoryForTerminate=5000
+    
+  fi
+
+}
