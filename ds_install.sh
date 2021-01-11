@@ -114,8 +114,6 @@ RETVAL1=$?
 
 logEndAct "Exit code after license is set - $RETVAL1"
 
-changeParams $ds_root $AF_HOME
-
 logBeginAct "Checking existing instances..."
 
 checkInstanceExists $ds_root 
