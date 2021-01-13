@@ -101,7 +101,9 @@ checkInstanceExists() {
       
       instanceExists=1 
   
-  fi
+    fi
+  
+  done
   
   if [[ "$instanceExists" == 0 ]]; then
   
