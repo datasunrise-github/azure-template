@@ -121,7 +121,7 @@ copyProxies() {
   
   logBeginAct "Copy proxy..."
   
-  for attempts in {1..100}
+  for attempts in {1..50}
   do
     
     instances=`$1/cmdline/executecommand.sh showInstances`
