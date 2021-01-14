@@ -84,7 +84,7 @@ checkInstanceExists() {
 
   instanceExists=
   
-  for attempts in {1..70}
+  for attempts in {1..60}
   do
     
     instances=`$1/cmdline/executecommand.sh showInstances`
@@ -93,7 +93,7 @@ checkInstanceExists() {
       
       echo "No Instances, waiting..."
       
-      sleep 5
+      sleep 6
       
       instanceExists=0
     
@@ -121,7 +121,7 @@ copyProxies() {
   
   logBeginAct "Copy proxy..."
   
-  for attempts in {1..70}
+  for attempts in {1..50}
   do
     
     instances=`$1/cmdline/executecommand.sh showInstances`
