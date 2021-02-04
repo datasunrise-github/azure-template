@@ -32,3 +32,15 @@ curl https://packages.microsoft.com/config/rhel/8/prod.repo > /etc/yum.repos.d/m
 sudo ACCEPT_EULA=Y yum install msodbcsql17 -y
 
 logBeginAct "mssqlODBCdriver install OK"
+
+logBeginAct "Oracle ODBC driver installation"
+
+wget https://www.datasunrise.com/support-files/oracle-instantclient19.10-basic-19.10.0.0.0-1.x86_64.rpm -O oracle-instantclient19.10-basic-19.10.0.0.0-1.x86_64.rpm
+
+rpm -i oracle-instantclient19.10-basic-19.10.0.0.0-1.x86_64.rpm
+
+cd /opt/oracle-instantclient19.10-basic-19.10.0.0.0-1
+
+sudo ln -s libclntsh.so.12.1 libclntsh.so
+
+logBeginAct "Oracle ODBC driver install OK"
