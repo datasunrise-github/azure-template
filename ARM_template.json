@@ -142,7 +142,8 @@
         "allowedValues": [
             "postgresql",
             "mysql",
-            "mssql"
+            "mssql",
+            "oracle"
         ],
         "metadata": {
             "description": "Target database type. For example, postgresql"
