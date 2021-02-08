@@ -47,8 +47,20 @@ cd /opt/datasunrise
 setupProxy() {
 
   cd /opt/datasunrise/cmdline
+  
+  xtra_args=
+  
+  if [ "$3" = "oracle" ]; then
+    xtra_args="-instance $5"
+    
+    if [ "$6" = "SYS" ] || [ "$6" = "sys" ]; then
+      xtra_args="-instance $5 -sysDba"
+      
+    fi
+      
+  fi
 
-  ./executecommand.sh addInstancePlus -name $1 -dbPort $2 -dbType $3 -dbHost $4 -database $5 -login $6 -password $7 -proxyHost `hostname -I` -proxyPort $8 -savePassword ds 
+  ./executecommand.sh addInstancePlus -name $1 $xtra_args -dbPort $2 -dbType $3 -dbHost $4 -database $5 -login $6 -password $7 -proxyHost `hostname -I` -proxyPort $8 -savePassword ds 
   
 }
 
