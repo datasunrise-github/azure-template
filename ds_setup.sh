@@ -96,7 +96,7 @@ checkInstanceExists() {
 
   instanceExists=
   
-  for attempts in {1..60}
+  for attempts in {1..100}
   do
     
     instances=`$1/cmdline/executecommand.sh showInstances`
@@ -105,27 +105,23 @@ checkInstanceExists() {
       
       echo "No Instances, waiting..."
       
-      sleep 6
+      echo "$instances"
+      
+      sleep 5
       
       instanceExists=0
     
     else
       
       instanceExists=1 
+      
+      break
   
     fi
   
   done
   
-  if [[ "$instanceExists" == 0 ]]; then
   
-    logEndAct "No instances found. Will create new."
-    
-  else
-  
-    logEndAct "Instances found. Will copy."
-    
-  fi
 
 }
 
@@ -133,28 +129,29 @@ copyProxies() {
   
   logBeginAct "Copy proxy..."
   
-  for attempts in {1..50}
-  do
+  #for attempts in {1..50}
+  #do
     
-    instances=`$1/cmdline/executecommand.sh showInstances`
+   # instances=`$1/cmdline/executecommand.sh showInstances`
     
-    if [[ "$instances" == "No Instances" ]]; then
+    #if [[ "$instances" == "No Instances" ]]; then
       
-      echo "No Instances, waiting..."
-      sleep 5
+     # echo "No Instances, waiting..."
+      #sleep 5
                               
-    else
+    #else
       
-      service datasunrise stop
-      sudo LD_LIBRARY_PATH="$1":"$1/lib":$LD_LIBRARY_PATH AF_HOME="$2" AF_CONFIG="$2" $1/AppBackendService COPY_PROXIES
-      sudo LD_LIBRARY_PATH="$1":"$1/lib":$LD_LIBRARY_PATH AF_HOME="$2" AF_CONFIG="$2" $1/AppBackendService COPY_TRAILINGS
-      service datasunrise restart
-      sleep 10
-      break
+     # echo "No Instances found. Will copy."
+   service datasunrise stop
+   sudo LD_LIBRARY_PATH="$1":"$1/lib":$LD_LIBRARY_PATH AF_HOME="$2" AF_CONFIG="$2" $1/AppBackendService COPY_PROXIES
+   sudo LD_LIBRARY_PATH="$1":"$1/lib":$LD_LIBRARY_PATH AF_HOME="$2" AF_CONFIG="$2" $1/AppBackendService COPY_TRAILINGS
+   service datasunrise start
+   #sleep 10
+      #break
       
-    fi
+    #fi
                         
-  done
+  #done
   
   logEndAct "Proxies copied."
                
