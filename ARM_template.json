@@ -86,14 +86,20 @@
     },
     "DSDatabaseType": {
         "type": "string",
-        "defaultValue": "postgresql",
+        "allowedValues": [
+            "postgresql",
+            "mssql"
+        ],
         "metadata": {
             "description": "Type of database to be used as Dictionary and Audit database for DS configuration."
       }
     },
     "DSDatabasePort":{
         "type": "int",
-        "defaultValue": 5432,
+         "allowedValues": [
+            5432,
+            1433
+        ],
         "metadata": {
             "description": "Dictionary and Audit Database port"
         }
@@ -209,7 +215,7 @@
         "networkInterfaceName": "[concat(variables('vmNameScale'),'NetInt')]",
         "publicIPAddressName": "[concat(parameters('dnsLabelPrefix'), '-ip')]",
         "resourceGroupName": "[resourceGroup().name]",
-        "serverName": "PostgreSQServer",
+        "serverName": "DictionaryDatabase",
         "skuCapacity": 2,
         "skuFamily": "Gen5",
         "skuName": "GP_Gen5_2",
@@ -363,6 +369,75 @@
                 "type": "virtualNetworkRules",
                 "name": "[variables('VNETRule')]",
                 "apiVersion": "2017-12-01",
+                "dependsOn": [
+                    "[variables('serverName')]"
+                ],
+                "properties": {
+                    "virtualNetworkSubnetId": "[variables('subnetRef')]"
+                }
+            }
+        ]
+    },
+      {
+        "condition": "[equals(parameters('DSDatabaseType'),'mssql')]",
+        "name": "[variables('serverName')]",
+        "type": "Microsoft.Sql/servers",
+        "apiVersion": "2020-02-02-preview",
+       // "dependsOn": [
+          //  "[resourceId('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"
+       // ],
+        "sku": {
+            "name": "[variables('skuName')]",
+            "tier": "[variables('skuTier')]",
+            "capacity": "[variables('skuCapacity')]",
+            "size": "[variables('skuSize')",
+            "family": "[variables('skuFamily')]"
+        },
+        "properties": {
+            "publicNetworkAccess": "Enabled",
+            "sslEnforcement": "Disabled",
+            "storageProfile": {
+                "backupRetentionDays": "[parameters('DSDatabaseBackupRetentionDays')]",
+                "storageMB": "[variables('skuSize')]",
+                "storageAutogrow": "Disabled"
+            },
+            "createMode": "Default",
+            "administratorLogin": "[parameters('DSDatabaseAdministratorLogin')]",
+            "administratorLoginPassword": "[parameters('DSDatabaseAdministratorLoginPassword')]"
+        },
+        "location": "[variables('location')]",
+        "resources": [
+            {
+                "condition": "[equals(parameters('DSDatabaseType'),'mssql')]",
+                "type": "databases",
+                "name": "[parameters('DictionaryDatabaseName')]",
+                  "apiVersion": "2020-02-02-preview",
+                  "location": "[variables('location')]",
+                  "dependsOn": [
+                    "[variables('serverName')]"
+                ],
+                  "properties":{
+                     "charset": "UTF8"
+                  }
+            },
+            {
+               "condition": "[equals(parameters('DSDatabaseType'),'mssql')]",
+                "type": "databases",
+                "name": "[parameters('auditDatabaseName')]",
+                "apiVersion": "2020-02-02-preview",
+                "location": "[variables('location')]",
+                "dependsOn": [
+                    "[variables('serverName')]"
+                ],
+                "properties":{
+                    "charset": "UTF8"
+                }
+            },
+            {
+                "condition": "[equals(parameters('DSDatabaseType'),'mssql')]",
+                "type": "virtualNetworkRules",
+                "name": "[variables('VNETRule')]",
+                "apiVersion": "2020-02-02-preview",
                 "dependsOn": [
                     "[variables('serverName')]"
                 ],
@@ -566,7 +641,7 @@
                                 ]
                             },
                             "protectedSettings": {
-                                "commandToExecute": "[concat('./ds_install.sh ','ds_params.sh',' ','install_libraries.sh', ' ', concat('/subscriptions/', subscription().subscriptionId,'/resourcegroups/', resourcegroup().name,'/providers/Microsoft.ManagedIdentity/userAssignedIdentities/',variables('managedIdentityName')),' ','ds_pre_setup.sh',' \"', parameters('linkToDSBuild'),'\" ', 'ds_setup.sh',' ', parameters('DSDatabaseType'), ' ',reference(resourceId('Microsoft.DBforPostgreSQL/servers/', variables('serverName'))).fullyQualifiedDomainName,' ', parameters('DSDatabasePort'), ' ', parameters('dictionaryDatabaseName'), ' ', concat(parameters('DSDatabaseAdministratorLogin'),'@',reference(resourceId('Microsoft.DBforPostgreSQL/servers/', variables('serverName'))).fullyQualifiedDomainName),' ', parameters('DSDatabaseAdministratorLoginPassword'), ' ', variables('ds_serverNameScale'), ' ', parameters('dsAdminPassword'),' ',parameters('auditDatabaseName'),' ', 'ds_remove_servers.sh', ' ',parameters('DSLicenseKey'), ' ',parameters('TargetDBInstanceName'),' ',parameters('TargetDBPort'),' ', parameters('TargetDBType'),' ',parameters('TargetDBHost'),' ', parameters('TargetDBName'),' ', parameters('TargetDBLogin'),' ', parameters('TargetDBLoginPassword'),' ', parameters('TargetDBProxyPort'),' ',variables('vmCount'),' ', variables('resourceGroupName'),' ',variables('vmScaleSetName'))]"                            
+                                "commandToExecute": "[concat('./ds_install.sh ','ds_params.sh',' ','install_libraries.sh', ' ', concat('/subscriptions/', subscription().subscriptionId,'/resourcegroups/', resourcegroup().name,'/providers/Microsoft.ManagedIdentity/userAssignedIdentities/',variables('managedIdentityName')),' ','ds_pre_setup.sh',' \"', parameters('linkToDSBuild'),'\" ', 'ds_setup.sh',' ', parameters('DSDatabaseType'), ' ',if(equals(parameters('DSDatabaseType'),'postgresql'),reference(resourceId('Microsoft.DBforPostgreSQL/servers/', variables('serverName'))).fullyQualifiedDomainName, if(equals(parameters('DSDatabaseType'), 'mysql'), reference(resourceId('Microsoft.DBforMySQL/servers/', variables('serverName'))).fullyQualifiedDomainName, reference(resourceId('Microsoft.Sql/servers/', variables('serverName'))).fullyQualifiedDomainName)),' ', parameters('DSDatabasePort'), ' ', parameters('dictionaryDatabaseName'), ' ', concat(parameters('DSDatabaseAdministratorLogin'),'@',if(equals(parameters('DSDatabaseType'),'postgresql'),reference(resourceId('Microsoft.DBforPostgreSQL/servers/', variables('serverName'))).fullyQualifiedDomainName,if(equals(parameters('DSDatabaseType'), 'mysql'), reference(resourceId('Microsoft.DBforMySQL/servers/', variables('serverName'))).fullyQualifiedDomainName,reference(resourceId('Microsoft.Sql/servers/', variables('serverName'))).fullyQualifiedDomainName))),' ', parameters('DSDatabaseAdministratorLoginPassword'), ' ', variables('ds_serverNameScale'), ' ', parameters('dsAdminPassword'),' ',parameters('auditDatabaseName'),' ', 'ds_remove_servers.sh', ' ',parameters('DSLicenseKey'), ' ',parameters('TargetDBInstanceName'),' ',parameters('TargetDBPort'),' ', parameters('TargetDBType'),' ',parameters('TargetDBHost'),' ', parameters('TargetDBName'),' ', parameters('TargetDBLogin'),' ', parameters('TargetDBLoginPassword'),' ', parameters('TargetDBProxyPort'),' ',variables('vmCount'),' ', variables('resourceGroupName'),' ',variables('vmScaleSetName'))]"                            
                             }
                         }
                     }
