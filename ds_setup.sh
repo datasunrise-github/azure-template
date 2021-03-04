@@ -35,12 +35,12 @@ resetAudit() {
 cd /opt/datasunrise
 
   sudo LD_LIBRARY_PATH="$1":"$1/lib":$LD_LIBRARY_PATH AF_HOME="$2" AF_CONFIG="$2" $1/AppBackendService CHANGE_SETTINGS \
-  AuditDatabaseType=1 \
-  AuditDatabaseHost=$3 \
-  AuditDatabasePort=$4 \
-  AuditDatabaseName=$5 \
-  AuditLogin=$6 \
-  AuditPassword=$7 \
+  AuditDatabaseType=$3 \
+  AuditDatabaseHost=$4 \
+  AuditDatabasePort=$5 \
+  AuditDatabaseName=$6 \
+  AuditLogin=$7 \
+  AuditPassword=$8 \
   
 }
 
