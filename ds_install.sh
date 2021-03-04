@@ -86,7 +86,17 @@ if [ "$RETVAL" == "93" ]; then
 
 fi
 
-resetAudit $ds_root $AF_HOME $ds_database_host $ds_database_port $audit_name $ds_database_login $ds_database_password
+if [ "$dictionary_type" == "postgresql"]; then
+
+  AuditType=1
+  
+elif [ "$dictionary_type" == "postgresql"]; then
+
+  AuditType=6
+  
+fi
+
+resetAudit $ds_root $AF_HOME $AuditType $ds_database_host $ds_database_port $audit_name $ds_database_login $ds_database_password
 
 RETVAL1=$?
 
