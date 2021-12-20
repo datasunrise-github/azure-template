@@ -90,7 +90,7 @@ if [ "$dictionary_type" == "postgresql"]; then
 
   AuditType=1
   
-elif [ "$dictionary_type" == "postgresql"]; then
+elif [ "$dictionary_type" == "mssql"]; then
 
   AuditType=6
   
