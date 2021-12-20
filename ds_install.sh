@@ -86,9 +86,13 @@ if [ "$RETVAL" == "93" ]; then
 
 fi
 
+echo $dictionary_type
+
 if [ "$dictionary_type" == "postgresql"]; then
 
   AuditType=1
+  
+  echo $AuditType
   
 elif [ "$dictionary_type" == "mssql"]; then
 
