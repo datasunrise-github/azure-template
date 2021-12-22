@@ -88,21 +88,27 @@ fi
 
 echo $dictionary_type
 
+#if [ "$dictionary_type" == "postgresql"]; then
 
+ # AuditType=1
+  
+  #echo $AuditType
+  
+#elif [ "$dictionary_type" == "mssql"]; then
 
-if [ "$dictionary_type" == "postgresql"]; then
+ # AuditType=6
+  
+#fi
+
+Dict="postgresql"
+
+if [ "$Dict" == "postgresql" ]; then
 
   AuditType=1
   
   echo $AuditType
   
-elif [ "$dictionary_type" == "mssql"]; then
-
-  AuditType=6
-  
 fi
-
-echo $AuditType
 
 resetAudit $ds_root $AF_HOME $AuditType $ds_database_host $ds_database_port $audit_name $ds_database_login $ds_database_password
 
