@@ -100,13 +100,15 @@ echo $dictionary_type
   
 #fi
 
-Dict=$dictionary_type
-
 if [ "$dictionary_type" == "postgresql" ]; then
 
   AuditType=1
   
   echo $AuditType
+  
+elif [ "$dictionary_type" == "mssql"]; then
+
+  AuditType=6
   
 fi
 
