@@ -88,7 +88,7 @@ fi
 
 echo $dictionary_type
 
-if [ "$dictionary_type" == "postgresql"]; then
+if [ "$dictionary_type" == "$dictionary_type"]; then
 
   AuditType=1
   
