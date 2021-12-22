@@ -100,7 +100,7 @@ echo $dictionary_type
   
 #fi
 
-Dict=$7
+Dict=$dictionary_type
 
 if [ "$Dict" == "postgresql" ]; then
 
