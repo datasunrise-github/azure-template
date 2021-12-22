@@ -88,7 +88,7 @@ fi
 
 echo $dictionary_type
 
-echo $7
+
 
 if [ "$dictionary_type" == "postgresql"]; then
 
