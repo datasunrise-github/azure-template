@@ -88,15 +88,17 @@ fi
 
 echo $dictionary_type
 
-if [ "$dictionary_type" == 'postgresql ']; then
+echo $7
 
-  AuditType="1"
+if [ "$dictionary_type" == "postgresql"]; then
+
+  AuditType=1
   
   echo $AuditType
   
 elif [ "$dictionary_type" == "mssql"]; then
 
-  AuditType="6"
+  AuditType=6
   
 fi
 
