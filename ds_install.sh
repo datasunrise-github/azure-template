@@ -102,7 +102,7 @@ echo $dictionary_type
 
 Dict=$dictionary_type
 
-if [ "$Dict" == "postgresql" ]; then
+if [ "$dictionary_type" == "postgresql" ]; then
 
   AuditType=1
   
