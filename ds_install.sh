@@ -100,6 +100,8 @@ echo $dictionary_type
   
 #fi
 
+Dict=$dictionary_type
+
 if [ "$dictionary_type" == "postgresql" ]; then
 
   AuditType=1
