@@ -86,7 +86,7 @@ if [ "$RETVAL" == "93" ]; then
 
 fi
 
-echo $dictionary_type
+echo $dictionary_type | cat -v
 
 #if [ "$dictionary_type" == "postgresql"]; then
 
