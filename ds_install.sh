@@ -100,7 +100,7 @@ printf "%q\n" "$dictionary_type"
   
 #fi
 
-Dict=$dictionary_type
+#Dict=$dictionary_type
 
 if [ "$dictionary_type" == "postgresql" ]; then
 
