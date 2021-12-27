@@ -86,7 +86,7 @@ if [ "$RETVAL" == "93" ]; then
 
 fi
 
-printf "%q\n" "$dictionary_type"
+#printf "%q\n" "$dictionary_type"
 
 #if [ "$dictionary_type" == "postgresql"]; then
 
@@ -99,8 +99,6 @@ printf "%q\n" "$dictionary_type"
  # AuditType=6
   
 #fi
-
-#Dict=$dictionary_type
 
 if [ "$dictionary_type" == "postgresql" ]; then
 
