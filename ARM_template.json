@@ -23,7 +23,7 @@
     },
     "namePrefix": {
         "type": "string",
-        "defaultValue": "DS",
+        "defaultValue": "ds-",
         "metadata": {
             "description": "Name prefix that will be used for Virtual Machine Scale Set resources"
       }
@@ -195,7 +195,7 @@
   "variables": {
         "authenticationType": "password",
         "bePoolName": "[concat(variables('vmScaleSetName'), 'bepool')]",
-        "ds_serverName": "DS",
+        "ds_serverName": "ds-",
         "ds_serverNameScale": "DS_Scale",
         "imagePublisher": "OpenLogic",
         "imageOffer": "CentOS",
@@ -215,7 +215,7 @@
         "networkInterfaceName": "[concat(variables('vmNameScale'),'NetInt')]",
         "publicIPAddressName": "[concat(parameters('dnsLabelPrefix'), '-ip')]",
         "resourceGroupName": "[resourceGroup().name]",
-        "serverName": "DictionaryDatabase",
+        "serverName": "[concat('configuration', parameters('dictionaryDatabaseName'))]",
         "skuCapacity": 2,
         "skuFamily": "Gen5",
         "skuName": "GP_Gen5_2",
@@ -641,7 +641,7 @@
                                 ]
                             },
                             "protectedSettings": {
-                                "commandToExecute": "[concat('./ds_install.sh ','ds_params.sh',' ','install_libraries.sh', ' ', concat('/subscriptions/', subscription().subscriptionId,'/resourcegroups/', resourcegroup().name,'/providers/Microsoft.ManagedIdentity/userAssignedIdentities/',variables('managedIdentityName')),' ','ds_pre_setup.sh',' \"', parameters('linkToDSBuild'),'\" ', 'ds_setup.sh',' ', parameters('DSDatabaseType'), ' ',if(equals(parameters('DSDatabaseType'),'postgresql'),reference(resourceId('Microsoft.DBforPostgreSQL/servers/', variables('serverName'))).fullyQualifiedDomainName, if(equals(parameters('DSDatabaseType'), 'mysql'), reference(resourceId('Microsoft.DBforMySQL/servers/', variables('serverName'))).fullyQualifiedDomainName, reference(resourceId('Microsoft.Sql/servers/', variables('serverName'))).fullyQualifiedDomainName)),' ', parameters('DSDatabasePort'), ' ', parameters('dictionaryDatabaseName'), ' ', concat(parameters('DSDatabaseAdministratorLogin'),'@',if(equals(parameters('DSDatabaseType'),'postgresql'),reference(resourceId('Microsoft.DBforPostgreSQL/servers/', variables('serverName'))).fullyQualifiedDomainName,if(equals(parameters('DSDatabaseType'), 'mysql'), reference(resourceId('Microsoft.DBforMySQL/servers/', variables('serverName'))).fullyQualifiedDomainName,reference(resourceId('Microsoft.Sql/servers/', variables('serverName'))).fullyQualifiedDomainName))),' ', parameters('DSDatabaseAdministratorLoginPassword'), ' ', variables('ds_serverNameScale'), ' ', parameters('dsAdminPassword'),' ',parameters('auditDatabaseName'),' ', 'ds_remove_servers.sh', ' ',parameters('DSLicenseKey'), ' ',parameters('TargetDBInstanceName'),' ',parameters('TargetDBPort'),' ', parameters('TargetDBType'),' ',parameters('TargetDBHost'),' ', parameters('TargetDBName'),' ', parameters('TargetDBLogin'),' ', parameters('TargetDBLoginPassword'),' ', parameters('TargetDBProxyPort'),' ',variables('vmCount'),' ', variables('resourceGroupName'),' ',variables('vmScaleSetName'))]"                            
+                                "commandToExecute": "[concat('./ds_install.sh ','ds_params.sh',' ','install_libraries.sh', ' ', concat('/subscriptions/', subscription().subscriptionId,'/resourcegroups/', resourcegroup().name,'/providers/Microsoft.ManagedIdentity/userAssignedIdentities/',variables('managedIdentityName')),' ','ds_pre_setup.sh',' \"', parameters('linkToDSBuild'),'\" ', 'ds_setup.sh',' ', parameters('DSDatabaseType'), ' ',if(equals(parameters('DSDatabaseType'),'postgresql'),reference(resourceId('Microsoft.DBforPostgreSQL/servers/', variables('serverName'))).fullyQualifiedDomainName, if(equals(parameters('DSDatabaseType'), 'mysql'), reference(resourceId('Microsoft.DBforMySQL/servers/', variables('serverName'))).fullyQualifiedDomainName, reference(resourceId('Microsoft.Sql/servers/', variables('serverName'))).fullyQualifiedDomainName)),' ', parameters('DSDatabasePort'), ' ', parameters('dictionaryDatabaseName'), ' ', concat(parameters('DSDatabaseAdministratorLogin'),'@',if(equals(parameters('DSDatabaseType'),'postgresql'),reference(resourceId('Microsoft.DBforPostgreSQL/servers/', variables('serverName'))).fullyQualifiedDomainName,if(equals(parameters('DSDatabaseType'), 'mysql'), reference(resourceId('Microsoft.DBforMySQL/servers/', variables('serverName'))).fullyQualifiedDomainName,reference(resourceId('Microsoft.Sql/servers/', variables('serverName'))).fullyQualifiedDomainName))),' ', parameters('DSDatabaseAdministratorLoginPassword'), ' ', variables('ds_serverName'), ' ', parameters('dsAdminPassword'),' ',parameters('auditDatabaseName'),' ', 'ds_remove_servers.sh', ' ',parameters('DSLicenseKey'), ' ',parameters('TargetDBInstanceName'),' ',parameters('TargetDBPort'),' ', parameters('TargetDBType'),' ',parameters('TargetDBHost'),' ', parameters('TargetDBName'),' ', parameters('TargetDBLogin'),' ', parameters('TargetDBLoginPassword'),' ', parameters('TargetDBProxyPort'),' ',variables('vmCount'),' ', variables('resourceGroupName'),' ',variables('vmScaleSetName'))]"                            
                             }
                         }
                     }
