@@ -5,27 +5,33 @@ pre_setup="./$4"
 link_to_DS_build=$5
 ds_setup="./$6"
 dictionary_type=$7
-ds_database_host=$8
-ds_database_port=$9
+dictionary_database_host=$8
+dictionary_database_port=$9
 dictionary_name=${10}
-ds_database_login=${11}
-ds_database_password=${12}
-ds_server_name=${13}
-ds_admin_password=${14}
-audit_name=${15}
-ds_remove_servers="/var/lib/waagent/custom-script/download/1/${16}"
-ds_license=${17}
-instance_name=${18}
-target_db_port=${19}
-target_db_type=${20}
-target_db_host=${21}
-target_database=${22}
-target_db_login=${23}
-target_db_password=${24}
-target_proxy_port=${25}
-vm_count=${26}
-resource_group_name=${27}
-vm_scale_set_name=${28}
+dictionary_database_login=${11}
+dictionary_database_password=${12}
+audit_type=${13}
+audit_database_host=${14}
+audit_database_port=${15}
+audit_database_name=${16}
+audit_database_login=${17}
+audit_database_password=${18}
+audit_server_name=${19}
+ds_server_name=${20}
+ds_admin_password=${21}
+ds_remove_servers="/var/lib/waagent/custom-script/download/1/${22}"
+ds_license=${23}
+instance_name=${24}
+target_db_port=${25}
+target_db_type=${26}
+target_db_host=${27}
+target_database=${28}
+target_db_login=${29}
+target_db_password=${30}
+target_proxy_port=${31}
+vm_count=${32}
+resource_group_name=${33}
+vm_scale_set_name=${34}
 ds_root='/opt/datasunrise'
 AF_HOME=$ds_root
 AF_CONFIG=$AF_HOME
@@ -70,7 +76,7 @@ logEndAct "Exit code after installation - $RETVAL"
 
 logBeginAct "DS_setup execution"
 
-resetDict $ds_root $AF_HOME $dictionary_type $ds_database_host $ds_database_port $dictionary_name $ds_database_login $ds_database_password $ds_server_name
+resetDict $ds_root $AF_HOME $dictionary_type $dictionary_database_host $dictionary_database_port $dictionary_name $dictionary_database_login $dictionary_database_password $ds_server_name
 
 RETVAL=$?
 
@@ -100,19 +106,27 @@ fi
   
 #fi
 
-if [ "$dictionary_type" == "postgresql" ]; then
+if [ "$audit_type" == "postgresql" ]; then
 
   AuditType=1
   
   echo $AuditType
   
-elif [ "$dictionary_type" == "mssql"]; then
+elif [ "$audit_type" == "mssql" ]; then
 
   AuditType=6
+
+  echo $AuditType
+
+elif [ "$audit_type" == "mysql" ]; then
+
+  AuditType=2
+
+  echo $AuditType
   
 fi
 
-resetAudit $ds_root $AF_HOME $AuditType $ds_database_host $ds_database_port $audit_name $ds_database_login $ds_database_password
+resetAudit $ds_root $AF_HOME $AuditType $audit_database_host $audit_database_port $audit_database_name $audit_database_login $audit_database_password $identity $resource_group_name $audit_server_name
 
 RETVAL1=$?
 
