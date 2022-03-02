@@ -804,12 +804,12 @@
                             "autoUpgradeMinorVersion": true,
                             "settings": {
                                 "fileUris": [
-                                    "https://raw.githubusercontent.com/Sinki25/azure-template/main/ds_install.sh",
-                                    "https://raw.githubusercontent.com/Sinki25/azure-template/main/ds_remove_servers.sh",
-                                    "https://raw.githubusercontent.com/Sinki25/azure-template/main/install_libraries.sh",
-                                    "https://raw.githubusercontent.com/Sinki25/azure-template/main/ds_setup.sh",
-                                    "https://raw.githubusercontent.com/Sinki25/azure-template/main/ds_pre_setup.sh",
-                                    "https://raw.githubusercontent.com/Sinki25/azure-template/main/ds_params.sh"        
+                                    "https://raw.githubusercontent.com/datasunrise-github/azure-template/main/ds_install.sh",
+                                    "https://raw.githubusercontent.com/datasunrise-github/azure-template/main/ds_remove_servers.sh",
+                                    "https://raw.githubusercontent.com/datasunrise-github/azure-template/main/install_libraries.sh",
+                                    "https://raw.githubusercontent.com/datasunrise-github/azure-template/main/ds_setup.sh",
+                                    "https://raw.githubusercontent.com/datasunrise-github/azure-template/main/ds_pre_setup.sh",
+                                    "https://raw.githubusercontent.com/datasunrise-github/azure-template/main/ds_params.sh"        
                                 ]
                             },
                             "protectedSettings": {
