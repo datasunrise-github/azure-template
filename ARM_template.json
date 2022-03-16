@@ -14,11 +14,11 @@
             "description": "Linux VM User Password"
       }
     },
-     "dnsLabelPrefix": {
-        "defaultValue": "linuxdefault",
+     "deploymentPrefix": {
+        "defaultValue": "ds",
         "type": "String",
         "metadata": {
-            "description": "DNS Label for the Public IP. It must be lowercase and must match the following regular expression: ^[a-z][a-z0-9-]{1,61}[a-z0-9]$."
+            "description": "Deployment name for this configuration"
       }
     },
     "networkSecurityGroupName": {
@@ -237,11 +237,14 @@
         "bePoolName": "[concat(variables('vmScaleSetName'), 'bepool')]",
         "DictionaryServerName": "[concat('configuration', parameters('DictionaryDatabaseName'))]",
         "DictionaryVNETRule": "DictionaryRule",
+        "dnsLabelPrefix": "[concat(parameters('deploymentPrefix'),'linuxdefault')]",
         "ds_serverName": "ds-",
         "ds_serverNameScale": "DS_Scale",
         "imagePublisher": "OpenLogic",
         "imageOffer": "CentOS",
         "imageSKU": "7_8",
+        "keysPermissions": ["get"],
+        "keyVaultName": "[concat(parameters('deploymentPrefix'), 'KeyVault')]",
         "linuxConfiguration": {
             "disablePasswordAuthentication": false
         },
@@ -255,8 +258,9 @@
         "natStartPort": 11000,
         "natEndPort": 11001,
         "networkInterfaceName": "[concat(variables('vmNameScale'),'NetInt')]",
-        "publicIPAddressName": "[concat(parameters('dnsLabelPrefix'), '-ip')]",
+        "publicIPAddressName": "[concat(variables('dnsLabelPrefix'), '-ip')]",
         "resourceGroupName": "[resourceGroup().name]",
+        "secretsPermissions": ["get"],
         "skuCapacity": 2,
         "skuFamily": "Gen5",
         "skuName": "GP_Gen5_2",
@@ -264,11 +268,105 @@
         "skuTier": "GeneralPurpose",
         "storageAccountName":"[concat('vhds', uniqueString(resourceGroup().id))]",
         "subnetRef": "[resourceId(parameters('subnetResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets/', parameters('virtualNetworkName'), parameters('subnetName'))]",
+        "tenantId": "[subscription().tenantId]",
         "vmCount": 2,
         "vmNameScale": "VMScale",
         "vmScaleSetName": "DSScaleSet"
     },
     "resources": [
+        {
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2021-04-01-preview",
+      "name": "[variables('keyVaultName')]",
+      "location": "[variables('location')]",
+      "properties": {
+        "enabledForDeployment": true,
+        "enabledForDiskEncryption": true,
+        "enabledForTemplateDeployment": true,
+        "tenantId": "[variables('tenantId')]",
+        "accessPolicies": [
+          {
+            "objectId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('managedIdentityName')), '2018-11-30').principalId]",
+            //"objectId": "[subscription().subscriptionId]",
+            "tenantId": "[variables('tenantId')]",
+            "permissions": {
+              "keys": "[variables('keysPermissions')]",
+              "secrets": [
+                    "set",
+                    "get",
+                    "list",
+                    "purge",
+                    "delete",
+                    "recover"
+                ]
+            }
+          }
+        ],
+        "sku": {
+          "name": "Standard",
+          "family": "A"
+        },
+        "networkAcls": {
+          "defaultAction": "Allow",
+          "bypass": "AzureServices"
+        }
+      }
+    },
+   {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2021-04-01-preview",
+      "name": "[concat(variables('keyVaultName'), '/dsSecretAdminPassword')]",
+      "properties": {
+        "value": "[parameters('dsAdminPassword')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2021-04-01-preview",
+      "name": "[concat(variables('keyVaultName'), '/dsSecretTargetAdminPassword')]",
+      "properties": {
+        "value": "[parameters('TargetDBLoginPassword')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2021-04-01-preview",
+      "name": "[concat(variables('keyVaultName'), '/dsSecretDictionaryAdminPassword')]",
+      "properties": {
+        "value": "[parameters('DictionaryDatabaseAdministratorLoginPassword')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2021-04-01-preview",
+      "name": "[concat(variables('keyVaultName'), '/dsSecretAuditAdminPassword')]",
+      "properties": {
+        "value": "[parameters('AuditDatabaseAdministratorLoginPassword')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2021-04-01-preview",
+      "name": "[concat(variables('keyVaultName'), '/dsSecretLicenseKey')]",
+      "properties": {
+        "value": "[parameters('DSLicenseKey')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
+      ]
+    },
     {
         "type": "Microsoft.Authorization/roleAssignments",
         "apiVersion": "2018-09-01-preview",
@@ -639,7 +737,7 @@
             "publicIpAllocationMethod": "Dynamic",
             "publicIPAddressVersion": "IPv4",
             "dnsSettings": {
-                "domainNameLabel": "[parameters('dnsLabelPrefix')]"
+                "domainNameLabel": "[variables('dnsLabelPrefix')]"
             },
             "idleTimeoutInMinutes": 4
         }
@@ -813,7 +911,7 @@
                                 ]
                             },
                             "protectedSettings": {
-                                "commandToExecute": "[concat('./ds_install.sh ','ds_params.sh',' ','install_libraries.sh', ' ', concat('/subscriptions/', subscription().subscriptionId,'/resourcegroups/', resourcegroup().name,'/providers/Microsoft.ManagedIdentity/userAssignedIdentities/',variables('managedIdentityName')),' ','ds_pre_setup.sh',' \"', parameters('linkToDSBuild'),'\" ', 'ds_setup.sh',' ', parameters('DictionaryDatabaseType'), ' ',if(equals(parameters('DictionaryDatabaseType'),'postgresql'),reference(resourceId('Microsoft.DBforPostgreSQL/servers/', variables('DictionaryServerName'))).fullyQualifiedDomainName, if(equals(parameters('DictionaryDatabaseType'), 'mysql'), reference(resourceId('Microsoft.DBforMySQL/servers/', variables('DictionaryServerName'))).fullyQualifiedDomainName, reference(resourceId('Microsoft.Sql/servers/', variables('DictionaryServerName'))).fullyQualifiedDomainName)),' ', parameters('DictionaryDatabasePort'), ' ', parameters('DictionaryDatabaseName'), ' ', concat(parameters('DictionaryDatabaseAdministratorLogin'),'@',if(equals(parameters('DictionaryDatabaseType'),'postgresql'),reference(resourceId('Microsoft.DBforPostgreSQL/servers/', variables('DictionaryServerName'))).fullyQualifiedDomainName,if(equals(parameters('DictionaryDatabaseType'), 'mysql'), reference(resourceId('Microsoft.DBforMySQL/servers/', variables('DictionaryServerName'))).fullyQualifiedDomainName,reference(resourceId('Microsoft.Sql/servers/', variables('DictionaryServerName'))).fullyQualifiedDomainName))),' ', parameters('DictionaryDatabaseAdministratorLoginPassword'), ' ', parameters('AuditDatabaseType'), ' ', if(equals(parameters('AuditDatabaseType'),'postgresql'),reference(resourceId('Microsoft.DBforPostgreSQL/servers/', variables('AuditServerName'))).fullyQualifiedDomainName, if(equals(parameters('AuditDatabaseType'), 'mysql'), reference(resourceId('Microsoft.DBforMySQL/servers/', variables('AuditServerName'))).fullyQualifiedDomainName, reference(resourceId('Microsoft.Sql/servers/', variables('AuditServerName'))).fullyQualifiedDomainName)),' ', parameters('AuditDatabasePort'), ' ', parameters('AuditDatabaseName'), ' ', concat(parameters('AuditDatabaseAdministratorLogin'),'@',if(equals(parameters('AuditDatabaseType'),'postgresql'),reference(resourceId('Microsoft.DBforPostgreSQL/servers/', variables('AuditServerName'))).fullyQualifiedDomainName,if(equals(parameters('AuditDatabaseType'), 'mysql'), reference(resourceId('Microsoft.DBforMySQL/servers/', variables('AuditServerName'))).fullyQualifiedDomainName,reference(resourceId('Microsoft.Sql/servers/', variables('AuditServerName'))).fullyQualifiedDomainName))), ' ', parameters('AuditDatabaseAdministratorLoginPassword'), ' ', variables('AuditServerName'), ' ', variables('ds_serverName'), ' ', parameters('dsAdminPassword'),' ', 'ds_remove_servers.sh', ' ', parameters('DSLicenseKey'), ' ',parameters('TargetDBInstanceName'),' ',parameters('TargetDBPort'),' ', parameters('TargetDBType'),' ',parameters('TargetDBHost'),' ', parameters('TargetDBName'),' ', parameters('TargetDBLogin'),' ', parameters('TargetDBLoginPassword'),' ', parameters('TargetDBProxyPort'),' ',variables('vmCount'),' ', variables('resourceGroupName'),' ',variables('vmScaleSetName'))]"                            
+                                "commandToExecute": "[concat('./ds_install.sh ','ds_params.sh',' ','install_libraries.sh', ' ', concat('/subscriptions/', subscription().subscriptionId,'/resourcegroups/', resourcegroup().name,'/providers/Microsoft.ManagedIdentity/userAssignedIdentities/',variables('managedIdentityName')),' ','ds_pre_setup.sh',' \"', parameters('linkToDSBuild'),'\" ', 'ds_setup.sh',' ', parameters('DictionaryDatabaseType'), ' ',if(equals(parameters('DictionaryDatabaseType'),'postgresql'),reference(resourceId('Microsoft.DBforPostgreSQL/servers/', variables('DictionaryServerName'))).fullyQualifiedDomainName, if(equals(parameters('DictionaryDatabaseType'), 'mysql'), reference(resourceId('Microsoft.DBforMySQL/servers/', variables('DictionaryServerName'))).fullyQualifiedDomainName, reference(resourceId('Microsoft.Sql/servers/', variables('DictionaryServerName'))).fullyQualifiedDomainName)),' ', parameters('DictionaryDatabasePort'), ' ', parameters('DictionaryDatabaseName'), ' ', concat(parameters('DictionaryDatabaseAdministratorLogin'),'@',if(equals(parameters('DictionaryDatabaseType'),'postgresql'),reference(resourceId('Microsoft.DBforPostgreSQL/servers/', variables('DictionaryServerName'))).fullyQualifiedDomainName,if(equals(parameters('DictionaryDatabaseType'), 'mysql'), reference(resourceId('Microsoft.DBforMySQL/servers/', variables('DictionaryServerName'))).fullyQualifiedDomainName,reference(resourceId('Microsoft.Sql/servers/', variables('DictionaryServerName'))).fullyQualifiedDomainName))), ' ', parameters('AuditDatabaseType'), ' ', if(equals(parameters('AuditDatabaseType'),'postgresql'),reference(resourceId('Microsoft.DBforPostgreSQL/servers/', variables('AuditServerName'))).fullyQualifiedDomainName, if(equals(parameters('AuditDatabaseType'), 'mysql'), reference(resourceId('Microsoft.DBforMySQL/servers/', variables('AuditServerName'))).fullyQualifiedDomainName, reference(resourceId('Microsoft.Sql/servers/', variables('AuditServerName'))).fullyQualifiedDomainName)),' ', parameters('AuditDatabasePort'), ' ', parameters('AuditDatabaseName'), ' ', concat(parameters('AuditDatabaseAdministratorLogin'),'@',if(equals(parameters('AuditDatabaseType'),'postgresql'),reference(resourceId('Microsoft.DBforPostgreSQL/servers/', variables('AuditServerName'))).fullyQualifiedDomainName,if(equals(parameters('AuditDatabaseType'), 'mysql'), reference(resourceId('Microsoft.DBforMySQL/servers/', variables('AuditServerName'))).fullyQualifiedDomainName,reference(resourceId('Microsoft.Sql/servers/', variables('AuditServerName'))).fullyQualifiedDomainName))), ' ', variables('ds_serverName'), ' ', variables('keyVaultName'),' ', 'ds_remove_servers.sh', ' ',parameters('TargetDBInstanceName'),' ',parameters('TargetDBPort'),' ', parameters('TargetDBType'),' ',parameters('TargetDBHost'),' ', parameters('TargetDBName'),' ', parameters('TargetDBLogin'),' ', parameters('TargetDBProxyPort'),' ',variables('vmCount'),' ', variables('resourceGroupName'),' ',variables('vmScaleSetName'))]"                            
                             }
                         }
                     }
