@@ -239,7 +239,7 @@
         "DictionaryVNETRule": "DictionaryRule",
         "dnsLabelPrefix": "[concat(parameters('deploymentPrefix'),'linuxdefault')]",
         "ds_serverName": "ds-",
-        "ds_serverNameScale": "DS_Scale",
+        "ds_serverNameScale": "[concat(parameters('deploymentPrefix'),'_Scale')]",
         "imagePublisher": "OpenLogic",
         "imageOffer": "CentOS",
         "imageSKU": "7_8",
@@ -248,7 +248,7 @@
         "linuxConfiguration": {
             "disablePasswordAuthentication": false
         },
-        "loadBalancerName": "DSLoadBalancer",
+        "loadBalancerName": "[concat(parameters('deploymentPrefix'), 'LoadBalancer')]",
         "location": "[resourceGroup().location]",
         "managedIdentityName": "User-assigned-identity",
         "natBackendPort": 11000,
@@ -271,7 +271,8 @@
         "tenantId": "[subscription().tenantId]",
         "vmCount": 2,
         "vmNameScale": "VMScale",
-        "vmScaleSetName": "DSScaleSet"
+        "vmScaleSetName": "[concat(parameters('deploymentPrefix'), 'ScaleSet')]",
+        "vmAutoScaleSettings": "[concat(parameters('deploymentPrefix'), 'AutoScaleSettings')]"
     },
     "resources": [
         {
@@ -922,14 +923,14 @@
     },
     {
         "type": "microsoft.insights/autoscalesettings",
-        "name": "DSAutoScaleSettings",
+        "name": "[variables('vmAutoScaleSettings')]",
         "apiVersion": "2015-04-01",
         "location": "[variables('location')]",
         "dependsOn": [
             "[resourceId('Microsoft.Compute/virtualMachineScaleSets', variables('vmScaleSetName'))]"
         ],
         "properties": {
-            "name": "DSAutoScaleSettings",
+            "name": "[variables('vmAutoScaleSettings')]",
             "profiles": [
               {
                   "name": "vmAutoScale",

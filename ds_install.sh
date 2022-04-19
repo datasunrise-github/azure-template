@@ -9,29 +9,24 @@ dictionary_database_host=$8
 dictionary_database_port=$9
 dictionary_name=${10}
 dictionary_database_login=${11}
-dictionary_database_password=${12}
-audit_type=${13}
-audit_database_host=${14}
-audit_database_port=${15}
-audit_database_name=${16}
-audit_database_login=${17}
-audit_database_password=${18}
-audit_server_name=${19}
-ds_server_name=${20}
-ds_admin_password=${21}
-ds_remove_servers="/var/lib/waagent/custom-script/download/1/${22}"
-ds_license=${23}
-instance_name=${24}
-target_db_port=${25}
-target_db_type=${26}
-target_db_host=${27}
-target_database=${28}
-target_db_login=${29}
-target_db_password=${30}
-target_proxy_port=${31}
-vm_count=${32}
-resource_group_name=${33}
-vm_scale_set_name=${34}
+audit_type=${12}
+audit_database_host=${13}
+audit_database_port=${14}
+audit_database_name=${15}
+audit_database_login=${16}
+ds_server_name=${17}
+key_vault_name=${18}
+ds_remove_servers="/var/lib/waagent/custom-script/download/1/${19}"
+instance_name=${20}
+target_db_port=${21}
+target_db_type=${22}
+target_db_host=${23}
+target_database=${24}
+target_db_login=${25}
+target_proxy_port=${26}
+vm_count=${27}
+resource_group_name=${28}
+vm_scale_set_name=${29}
 ds_root='/opt/datasunrise'
 AF_HOME=$ds_root
 AF_CONFIG=$AF_HOME
@@ -56,23 +51,38 @@ RETVAL=$?
 
 logEndAct "Install_libraries execution result - $RETVAL" 
 
+logBeginAct "DS_remove_servers execution"
+
+ds_connect $ds_admin_password
+
+RETVAL1=$?
+
+logEndAct "Exit code after connection attempt - $RETVAL1"
+
+ds_showservers
+
+RETVAL1=$?
+
+logEndAct "Exit code after showDsServers - $RETVAL1"
+
+get_ds_servers_list $vm_count $resource_group_name $vm_scale_set_name
+
+remove_odd_servers
+
+logBeginAct "The odd servers were successfully removed"
+
+
 logBeginAct "Pre_setup execution"
 
 install_product $link_to_DS_build
+
+ds_admin_password=`az keyvault secret show --name dsSecretAdminPassword --vault-name $key_vault_name --query value --output tsv`
 
 RETVAL=$?
 
 logEndAct "Exit code after installation - $RETVAL"
 
-#curl https://packages.microsoft.com/config/rhel/8/prod.repo > /etc/yum.repos.d/mssql-release.repo
-
-#sudo yum remove unixODBC-utf16 unixODBC-utf16-devel 
-
-#sudo ACCEPT_EULA=Y yum install msodbcsql17 -y
-
-#sudo yum install unixODBC-devel -y
-
-#echo "mssql driver was updated successfully" >> /home/test.txt
+dictionary_database_password=`az keyvault secret show --name dsSecretDictionaryAdminPassword --vault-name $key_vault_name --query value --output tsv`
 
 logBeginAct "DS_setup execution"
 
@@ -92,19 +102,7 @@ if [ "$RETVAL" == "93" ]; then
 
 fi
 
-#printf "%q\n" "$dictionary_type"
-
-#if [ "$dictionary_type" == "postgresql"]; then
-
- # AuditType=1
-  
-  #echo $AuditType
-  
-#elif [ "$dictionary_type" == "mssql"]; then
-
- # AuditType=6
-  
-#fi
+audit_database_password=`az keyvault secret show --name dsSecretAuditAdminPassword --vault-name $key_vault_name --query value --output tsv`
 
 if [ "$audit_type" == "postgresql" ]; then
 
@@ -142,6 +140,8 @@ logBeginAct "Setting up license..."
 
 ds_connect $ds_admin_password
 
+ds_license=`az keyvault secret show --name dsSecretLicenseKey --vault-name $key_vault_name --query value --output tsv`
+
 echo $ds_license
 
 setupDSLicense $ds_license
@@ -176,38 +176,38 @@ checkInstanceExists $ds_root
 
 echo $instanceExists
 
+target_db_password=`az keyvault secret show --name dsSecretTargetAdminPassword --vault-name $key_vault_name --query value --output tsv`
+
 if [ "$instanceExists" == "0" ]; then
   
  logBeginAct "Create proxy..."
+
  ds_connect $ds_admin_password 
+
  setupProxy $instance_name $target_db_port $target_db_type $target_db_host $target_database $target_db_login $target_db_password $target_proxy_port
- #setupCleaningTask
+
+ ds_connect $ds_admin_password
+
+ RETVAL_LOGIN=$?
+
+ echo "$RETVAL_LOGIN"
+
+ setupCleaningTask $RETVAL_LOGIN $ds_root
   
 else
   
  logBeginAct "Copy proxy..."
+
  ds_connect $ds_admin_password 
+
  copyProxies $ds_root $AF_HOME
- #runCleaningTask
+
+ ds_connect $ds_admin_password
+
+ RETVAL_LOGIN=$?
+
+ echo "$RETVAL_LOGIN"
+
+ runCleaningTask $RETVAL_LOGIN $ds_root
 
 fi
-
-logBeginAct "DS_remove_servers execution"
-
-ds_connect $ds_admin_password
-
-RETVAL1=$?
-
-logEndAct "Exit code after connection attempt - $RETVAL1"
-
-ds_showservers
-
-RETVAL1=$?
-
-logEndAct "Exit code after showDsServers - $RETVAL1"
-
-get_ds_servers_list $vm_count $resource_group_name $vm_scale_set_name
-
-remove_odd_servers
-
-logBeginAct "The odd servers were successfully removed"
