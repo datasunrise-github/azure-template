@@ -51,27 +51,6 @@ RETVAL=$?
 
 logEndAct "Install_libraries execution result - $RETVAL" 
 
-logBeginAct "DS_remove_servers execution"
-
-ds_connect $ds_admin_password
-
-RETVAL1=$?
-
-logEndAct "Exit code after connection attempt - $RETVAL1"
-
-ds_showservers
-
-RETVAL1=$?
-
-logEndAct "Exit code after showDsServers - $RETVAL1"
-
-get_ds_servers_list $vm_count $resource_group_name $vm_scale_set_name
-
-remove_odd_servers
-
-logBeginAct "The odd servers were successfully removed"
-
-
 logBeginAct "Pre_setup execution"
 
 install_product $link_to_DS_build
@@ -184,7 +163,7 @@ if [ "$instanceExists" == "0" ]; then
 
  ds_connect $ds_admin_password 
 
- setupProxy $instance_name $target_db_port $target_db_type $target_db_host $target_database $target_db_login $target_db_password $target_proxy_port
+ setupProxy $instance_name $target_db_port $target_db_type $target_db_host $target_database $target_db_login $target_db_password $target_proxy_port $key_vault_name
 
  ds_connect $ds_admin_password
 
@@ -209,5 +188,25 @@ else
  echo "$RETVAL_LOGIN"
 
  runCleaningTask $RETVAL_LOGIN $ds_root
+
+ #logBeginAct "DS_remove_servers execution"
+
+#ds_connect $ds_admin_password
+
+#RETVAL1=$?
+
+#logEndAct "Exit code after connection attempt - $RETVAL1"
+
+#ds_showservers
+
+#RETVAL1=$?
+
+#logEndAct "Exit code after showDsServers - $RETVAL1"
+
+#get_ds_servers_list $vm_count $resource_group_name $vm_scale_set_name
+
+#remove_odd_servers
+
+#logBeginAct "The odd servers were successfully removed"
 
 fi
