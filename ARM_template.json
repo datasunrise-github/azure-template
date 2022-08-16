@@ -264,7 +264,6 @@
         "natEndPort": 10001,
         "networkInterfaceName": "[concat(variables('vmNameScale'),'NetInt')]",
         "proxyFrontendPortRangeEnd": "5434",
-        "publicIPAddressName": "[concat(variables('dnsLabelPrefix'), '-ip')]",
         "resourceGroupName": "[resourceGroup().name]",
         "secretsPermissions": ["get"],
         "skuCapacity": 2,
@@ -294,7 +293,6 @@
         "accessPolicies": [
           {
             "objectId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('managedIdentityName')), '2018-11-30').principalId]",
-            //"objectId": "[subscription().subscriptionId]",
             "tenantId": "[variables('tenantId')]",
             "permissions": {
               "keys": "[variables('keysPermissions')]",
@@ -379,7 +377,6 @@
         "apiVersion": "2018-09-01-preview",
         "name": "[parameters('roleName')]",
         "properties": {
-            //"roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '6d8ee4ec-f05a-4a1d-8b00-a9b17e38b437')]",
             "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
             "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('managedIdentityName')), '2018-11-30').principalId]",
             "scope": "[resourceGroup().id]",
@@ -823,23 +820,6 @@
     {
         "type": "Microsoft.Network/publicIpAddresses",
         "apiVersion": "2020-06-01",
-        "name": "[variables('publicIpAddressName')]",
-        "location": "[variables('location')]",
-        "sku": {
-            "name": "[variables('loadBalancerSKUName')]"
-        },
-        "properties": {
-            "publicIpAllocationMethod": "Static",
-            "publicIPAddressVersion": "IPv4",
-            "dnsSettings": {
-                "domainNameLabel": "[variables('dnsLabelPrefix')]"
-            },
-            "idleTimeoutInMinutes": 4
-        }
-    },
-    {
-        "type": "Microsoft.Network/publicIpAddresses",
-        "apiVersion": "2020-06-01",
         "name": "[variables('loadBalancerPublicIPName')]",
         "location": "[variables('location')]",
         "sku": {
@@ -936,8 +916,7 @@
             "capacity": "[variables('skuCapacity')]"
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups/', parameters('networkSecurityGroupName'))]",
-                "[resourceId('Microsoft.Network/publicIpAddresses/', variables('publicIpAddressName'))]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups/', parameters('networkSecurityGroupName'))]"
               ],
         "properties": {
            "upgradePolicy": {
@@ -981,18 +960,7 @@
                                                     {
                                                         "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerName'), variables('bePoolName'))]"
                                                     }
-                                                    ]
-                                                    //"loadBalancerInboundNatPools": [
-                                                    //{
-                                                    //    "id": "[resourceId('Microsoft.Network/loadBalancers/inboundNatPools', variables('loadBalancerName'), variables('natPoolName'))]"
-                                                    //},
-                                                    //{
-                                                    //    "id": "[resourceId('Microsoft.Network/loadBalancers/inboundNatPools', variables('loadBalancerName'), variables('natPool2Name'))]"
-                                                    //},
-                                                    //{
-                                                    //    "id": "[resourceId('Microsoft.Network/loadBalancers/inboundNatPools', variables('loadBalancerName'), variables('natPool3Name'))]"
-                                                    //}
-                                                    //]                               
+                                                    ]                              
                                                 }
                                             }
                                         ],

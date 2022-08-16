@@ -1,6 +1,6 @@
 install_product() {
 
-  wget -O DataSunrise_Suite.linux.64bit.run $1
+  wget --no-check-certificate -O DataSunrise_Suite.linux.64bit.run "$1"
 
   echo "DS download OK" >> /home/test.txt
 

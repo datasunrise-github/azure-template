@@ -1,8 +1,4 @@
-#sudo datasunrise service start
-
 ds_connect() {
-
-    #echo "./executecommand.sh connect -host `hostname` -port 11000 -login admin -password $1" >> /home/test.txt
     
     cd /opt/datasunrise/cmdline
     
@@ -56,8 +52,6 @@ get_ds_servers_list() {
                 echo "j=$j" >> /home/test.txt
 
                 hostname_scale=$(az vmss list-instances -g $2 -n $3 | jq ".[$j].osProfile.computerName")
-
-                #echo "hostname_scale=$hostname_scale" >> /home/test.txt
 
                 hostname_scale="${hostname_scale//\"}"
 
