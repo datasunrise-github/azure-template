@@ -56,16 +56,10 @@
         "subnetNameforScaleSet": {
             "type": "String",
             "metadata": {
-                "description": "Type existing Subnet name"
+                "description": "Type existing Subnet name "
             }
         },
-        "subnetNameforDictionary": {
-            "type": "String",
-            "metadata": {
-                "description": "Type existing Subnet name"
-            }
-        },
-        "subnetNameforAudit": {
+        "subnetNameforConfigurationDB": {
             "type": "String",
             "metadata": {
                 "description": "Type existing Subnet name"
@@ -566,7 +560,7 @@
                     "geoRedundantBackup": "Disabled"
                 },
                 "network": {
-                "delegatedSubnetResourceId": "[resourceID(parameters('subnetResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets/', parameters('virtualNetworkName'), parameters('subnetNameforDictionary'))]",
+                "delegatedSubnetResourceId": "[resourceID(parameters('subnetResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets/', parameters('virtualNetworkName'), parameters('subnetNameforConfigurationDB'))]",
                 "PrivateDnsZoneArmResourceId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZone'))]"
             }
           },
@@ -609,7 +603,7 @@
                     "geoRedundantBackup": "Disabled"
                 },
                 "network": {
-                "delegatedSubnetResourceId": "[resourceID(parameters('subnetResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets/', parameters('virtualNetworkName'), parameters('subnetNameforAudit'))]",
+                "delegatedSubnetResourceId": "[resourceID(parameters('subnetResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets/', parameters('virtualNetworkName'), parameters('subnetNameforConfigurationDB'))]",
                 "PrivateDnsZoneArmResourceId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZone'))]"
             }
             },
