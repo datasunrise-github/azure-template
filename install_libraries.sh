@@ -21,7 +21,7 @@ sudo yum install jq -y
 
 logBeginAct "jq was successfully installed"
 
-sudo yum install java-1.8.0-openjdk -y
+sudo yum install java-11-openjdk -y
 
 sudo yum install unixODBC -y
 

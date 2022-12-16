@@ -549,7 +549,7 @@
                 "[resourceId('Microsoft.Network/privateDnsZones/virtualNetworkLinks', variables('privateDnsZone'), variables('virtualNetworkLink'))]"
             ],
             "properties": {
-                "version": "11",
+                "version": "14",
                 "administratorLogin": "[parameters('DictionaryDatabaseAdministratorLogin')]",
                 "administratorLoginPassword": "[parameters('DictionaryDatabaseAdministratorLoginPassword')]",
                 "storage": {
@@ -592,7 +592,7 @@
                 "[resourceId('Microsoft.Network/privateDnsZones/virtualNetworkLinks', variables('privateDnsZone'), variables('virtualNetworkLink'))]"
             ],
             "properties": {
-                "version": "11",
+                "version": "14",
                 "administratorLogin": "[parameters('DictionaryDatabaseAdministratorLogin')]",
                 "administratorLoginPassword": "[parameters('DictionaryDatabaseAdministratorLoginPassword')]",
                 "storage": {
