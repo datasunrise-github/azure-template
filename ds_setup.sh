@@ -194,3 +194,18 @@ runCleaningTask() {
     
     logEndAct "Run node cleaning task - $RETVAL"
 }
+
+setupAdditionals() {               
+  
+  logBeginAct "Setting up additional parameters..."
+
+  sudo LD_LIBRARY_PATH="$1":"$1/lib":$LD_LIBRARY_PATH AF_HOME="$2" AF_CONFIG="$2" $1/AppBackendService CHANGE_SETTINGS=1 \
+    WebLoadBalancerEnabled=1 \
+    LogsDiscFreeSpaceLimit=2048 \
+    LogTotalSizeCore=10000 \
+    LogTotalSizeBackend=10000
+
+  RETVAL=$?
+
+  logEndAct "Set up additional parameters - $RETVAL"
+}

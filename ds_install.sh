@@ -172,6 +172,8 @@ if [ "$instanceExists" == "0" ]; then
  echo "$RETVAL_LOGIN"
 
  setupCleaningTask $RETVAL_LOGIN $ds_root
+
+ setupAdditionals $ds_root $AF_HOME
   
 else
   
