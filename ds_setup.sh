@@ -5,6 +5,8 @@ resetDict() {
   host=`hostname -i`
 
   sudo LD_LIBRARY_PATH="$1":"$1/lib":$LD_LIBRARY_PATH AF_HOME="$2" AF_CONFIG="$2" $1/AppBackendService CLEAN_LOCAL_SETTINGS \
+  PRINT_PROGRESS \
+  REMOVE_SERVER_BY_HOST_PORT=1 \
   DICTIONARY_TYPE=$3 \
   DICTIONARY_HOST=$4 \
   DICTIONARY_PORT=$5 \
