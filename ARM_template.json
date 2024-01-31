@@ -15,7 +15,7 @@
             }
         },
         "deploymentPrefix": {
-            "defaultValue": "ds",
+            "defaultValue": "dsdepl1",
             "type": "String",
             "metadata": {
                 "description": "Deployment name for this configuration"
@@ -39,6 +39,13 @@
             "type": "String",
             "metadata": {
                 "description": "Size of the Virtual Machine. Depends on the Location and Availability Set"
+            }
+        },
+        "vmCount": {
+            "defaultValue": "2",
+            "type": "String",
+            "metadata": {
+                "description": "The number of Virtual machines in the Scale Set"
             }
         },
         "loadBalancerType": {
@@ -261,9 +268,8 @@
         "tenantId": "[subscription().tenantId]",
         "virtualNetworkLink": "virtualNetworkLink",
         "virtualNetworkLinkConcat": "[concat(variables('privateDnsZone'), variables('virtualNetworkLink'))]",
-        "vmCount": 2,
         "vmNameScale": "VMScale",
-        "vmScaleSetName": "[concat(parameters('deploymentPrefix'), 'ScaleSet')]",
+        "vmScaleSetName": "DSScaleSet",
         "vmAutoScaleSettings": "[concat(parameters('deploymentPrefix'), 'AutoScaleSettings')]"
     },
     "resources": [
@@ -952,7 +958,7 @@
                                         ]
                                     },
                                     "protectedSettings": {
-                                        "commandToExecute": "[concat('./ds_install.sh ','ds_params.sh',' ','install_libraries.sh', ' ', concat('/subscriptions/', subscription().subscriptionId,'/resourcegroups/', resourcegroup().name,'/providers/Microsoft.ManagedIdentity/userAssignedIdentities/',variables('managedIdentityName')),' ','ds_pre_setup.sh',' \"', parameters('linkToDSBuild'),'\" ', 'ds_setup.sh',' ', variables('DictionaryDatabaseType'), ' ',reference(resourceId('Microsoft.DBforPostgreSQL/flexibleServers/', variables('DictionaryServerName'))).fullyQualifiedDomainName, ' ', variables('DictionaryDatabasePort'), ' ', parameters('DictionaryDatabaseName'), ' ', parameters('DictionaryDatabaseAdministratorLogin'), ' ', variables('AuditDatabaseType'), ' ',reference(resourceId('Microsoft.DBforPostgreSQL/flexibleServers/', variables('AuditServerName'))).fullyQualifiedDomainName, ' ', variables('AuditDatabasePort'), ' ', parameters('AuditDatabaseName'), ' ', parameters('AuditDatabaseAdministratorLogin'), ' ', variables('ds_serverName'), ' ', variables('keyVaultName'),' ', 'ds_remove_servers.sh', ' ',parameters('TargetDBInstanceName'),' ',parameters('TargetDBPort'),' ', parameters('TargetDBType'),' ',parameters('TargetDBHost'),' ', parameters('TargetDBName'),' ', parameters('TargetDBLogin'),' ', parameters('TargetDBProxyPort'),' ',variables('vmCount'),' ', variables('resourceGroupName'),' ',variables('vmScaleSetName'))]"
+                                        "commandToExecute": "[concat('./ds_install.sh ','ds_params.sh',' ','install_libraries.sh', ' ', concat('/subscriptions/', subscription().subscriptionId,'/resourcegroups/', resourcegroup().name,'/providers/Microsoft.ManagedIdentity/userAssignedIdentities/',variables('managedIdentityName')),' ','ds_pre_setup.sh',' \"', parameters('linkToDSBuild'),'\" ', 'ds_setup.sh',' ', variables('DictionaryDatabaseType'), ' ',reference(resourceId('Microsoft.DBforPostgreSQL/flexibleServers/', variables('DictionaryServerName'))).fullyQualifiedDomainName, ' ', variables('DictionaryDatabasePort'), ' ', parameters('DictionaryDatabaseName'), ' ', parameters('DictionaryDatabaseAdministratorLogin'), ' ', variables('AuditDatabaseType'), ' ',reference(resourceId('Microsoft.DBforPostgreSQL/flexibleServers/', variables('AuditServerName'))).fullyQualifiedDomainName, ' ', variables('AuditDatabasePort'), ' ', parameters('AuditDatabaseName'), ' ', parameters('AuditDatabaseAdministratorLogin'), ' ', variables('ds_serverName'), ' ', variables('keyVaultName'),' ', 'ds_remove_servers.sh', ' ',parameters('TargetDBInstanceName'),' ',parameters('TargetDBPort'),' ', parameters('TargetDBType'),' ',parameters('TargetDBHost'),' ', parameters('TargetDBName'),' ', parameters('TargetDBLogin'),' ', parameters('TargetDBProxyPort'),' ',parameters('vmCount'),' ', variables('resourceGroupName'),' ',variables('vmScaleSetName'))]"
                                     }
                                 }
                             }
@@ -977,7 +983,7 @@
                         "capacity": {
                             "minimum": "2",
                             "maximum": "2",
-                            "default": "[variables('vmCount')]"
+                            "default": "[parameters('vmCount')]"
                         },
                         "rules": []
                     }
