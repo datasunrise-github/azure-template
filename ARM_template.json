@@ -15,7 +15,6 @@
             }
         },
         "deploymentPrefix": {
-            "defaultValue": "dsdepl1",
             "type": "String",
             "metadata": {
                 "description": "Deployment name for this configuration"
