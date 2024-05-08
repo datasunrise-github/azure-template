@@ -92,7 +92,7 @@
         },
         "linkToDSBuild": {
             "type": "String",
-            "defaultValue": "https://update.datasunrise.com/get-last-datasunrise/index?cloud=general&os=linux",
+            "defaultValue": "https://update.datasunrise.com/get-last-datasunrise/index?cloud=general&os=rhel8",
             "metadata": {
                 "description": "Link to the DataSunrise build installer"
             }
@@ -842,10 +842,10 @@
                                     "autoUpgradeMinorVersion": true,
                                     "settings": {
                                         "fileUris": [
-                                            "https://arm-scripts-bkt.s3.eu-central-1.amazonaws.com/rhel8/ds-params.sh",
-                                            "https://arm-scripts-bkt.s3.eu-central-1.amazonaws.com/rhel8/ds-pre-setup.sh",
-                                            "https://arm-scripts-bkt.s3.eu-central-1.amazonaws.com/rhel8/ds-setup.sh",
-                                            "https://arm-scripts-bkt.s3.eu-central-1.amazonaws.com/rhel8/ds-install.sh"
+                                            "https://raw.githubusercontent.com/datasunrise-github/azure-template/main/ds-params.sh",
+                                            "https://raw.githubusercontent.com/datasunrise-github/azure-template/main/ds-pre-setup.sh",
+                                            "https://raw.githubusercontent.com/datasunrise-github/azure-template/main/ds-setup.sh",
+                                            "https://raw.githubusercontent.com/datasunrise-github/azure-template/main/ds-install.sh"
                                         ]
                                     },
                                     "protectedSettings": {
