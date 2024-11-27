@@ -424,7 +424,7 @@
                                 "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('loadBalancerNamePrivate'), variables('loadBalancerFrontendIPName'))]"
                             },
                             "backendAddressPool": {
-                                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerNamePublic'), variables('bePoolName'))]"
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerNamePrivate'), variables('bePoolName'))]"
                             },
                             "frontendPort": "[parameters('TargetDBPort')]",
                             "backendPort": "[parameters('TargetDBPort')]",
@@ -435,7 +435,7 @@
                             "loadDistribution": "Default",
                             "disableOutboundSnat": true,
                             "probe": {
-                                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('loadBalancerNamePublic'), variables('loadBalancerProbeName'))]"
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('loadBalancerNamePrivate'), variables('loadBalancerProbeName'))]"
                             }
                         }
                     }
