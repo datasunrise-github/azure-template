@@ -112,7 +112,7 @@ runCleaningTask() {
     ds_connect
     RETVAL=$?
     if [ "$RETVAL" == 0 ]; then
-      local EC2_CLEANING_TASK_ID=`$DSROOT/cmdline/executecommand.sh arbitrary -function getPeriodicTaskList -jsonContent "{taskTypes:[32]}" | python3 -c "import sys, json; print json.load(sys.stdin)['data'][1][0]"`
+      local EC2_CLEANING_TASK_ID=`$DSROOT/cmdline/executecommand.sh arbitrary -function getPeriodicTaskList -jsonContent "{taskTypes:[32]}" | python3 -c "import sys, json; print(json.load(sys.stdin)['data'][1][0])"`
       "$DSROOT"/cmdline/executecommand.sh arbitrary -function executePeriodicTaskManually -jsonContent "{id:$EC2_CLEANING_TASK_ID}"     
       RETVAL=$?
     fi
