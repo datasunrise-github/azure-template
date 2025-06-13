@@ -9,22 +9,23 @@ install_product() {
 
 install_libraries() {
   logBeginAct "Updating system packages..."
-  ACCEPT_EULA=Y yum update -y -q
+  dnf remove -y -q java-1.8.0-openjdk*
+  dnf install -y -q java-21-openjdk-headless
   logEndAct "Updating system packages result $?"
   
   logBeginAct "Configuring JVM..."
-  jvmpath=`find / -name libjvm.so`
+  jvmpath=`find /usr/ -name libjvm.so`
   echo $jvmpath | tr " " "\n" | sed -e "s/libjvm.so//" > /etc/ld.so.conf.d/jvm.conf
   ldconfig
   logEndAct "Configuring JVM result - $?"
 
-  az login --identity -u $AZURE_IDENTITY
+  az login --identity --resource-id $AZURE_IDENTITY
   log "Azure login result $?"
 }
 
 configureJVM() {
   logBeginAct "Configuring JVM..."
-  jvmpath=`find / -name libjvm.so`
+  jvmpath=`find /usr/ -name libjvm.so`
   echo $jvmpath | tr " " "\n" | sed -e "s/libjvm.so//" > /etc/ld.so.conf.d/jvm.conf
   ldconfig
   logEndAct "Configuring JVM result - $?"

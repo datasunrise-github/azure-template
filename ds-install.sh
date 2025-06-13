@@ -50,12 +50,12 @@ logEndAct "Pre-configuring DataSunrise node before installation result - $RETVAL
 logBeginAct "Install DataSunrise"
 install_product
 ds_admin_password=`az keyvault secret show --name dsSecretAdminPassword --vault-name $key_vault_name --query value --output tsv`
+target_db_password=`az keyvault secret show --name dsSecretTargetAdminPassword --vault-name $key_vault_name --query value --output tsv`
 RETVAL=$?
 logEndAct "Install DataSunrise result - $RETVAL"
-dictionary_database_password=`az keyvault secret show --name dsSecretDictionaryAdminPassword --vault-name $key_vault_name --query value --output tsv`
 logBeginAct "Switch DS dictionary to the remote"
 systemctl stop datasunrise
-sleep 10
+sleep $((RANDOM % 15 + 10))
 resetDict
 RETVAL_DICT=$?
 logEndAct "Switch DS dictionary to the remote result - $RETVAL_DICT"
@@ -71,25 +71,24 @@ if [ "$RETVAL_DICT" == "93" ]; then
   setDictionaryLicense
   RETVAL1=$?
   logEndAct "Setting DS License to Dictionary result - $RETVAL1"
-  audit_database_password=`az keyvault secret show --name dsSecretAuditAdminPassword --vault-name $key_vault_name --query value --output tsv`
   logBeginAct "Switch DS audit storage to the remote"
   resetAudit
   RETVAL1=$?
   logEndAct "Switch DS audit storage to the remote result - $RETVAL1"
 fi
-service datasunrise start
+systemctl start datasunrise
 log "Wait for DataSunrise Service Unit is fully started"
 sleep 20
 logBeginAct "Datasunrise was successfully started"
 logBeginAct "Preparing to Setup new Proxies or Copy from the existing setup"
 checkInstanceExists
-target_db_password=`az keyvault secret show --name dsSecretTargetAdminPassword --vault-name $key_vault_name --query value --output tsv`
 if [[ "$instanceExists" == "0" && "$RETVAL_DICT" == "93" ]]; then
   log "First Node configuration sequence started"
   setupProxy
   setupCleaningTask
   setupAdditionals
   elif [[ "$instanceExists" == "0" && "$RETVAL_DICT" == "94" ]]; then
+    start_time=$SECONDS
     while true; do
       checkInstanceExists
       if [ "$instanceExists" == "1" ]; then
@@ -98,6 +97,15 @@ if [[ "$instanceExists" == "0" && "$RETVAL_DICT" == "93" ]]; then
         break
       fi
       log "Waiting until Database Instance comes up"
+      elapsed_time=$(( SECONDS - start_time ))
+      if [ "$elapsed_time" -ge 300 ]; then
+        log "Timeout reached after 300 seconds. Exiting Wait loop."
+        log "Try instance creation sequence"
+        setupProxy
+        setupCleaningTask
+        setupAdditionals
+        break
+      fi
       sleep 10
     done
   else
@@ -106,6 +114,7 @@ if [[ "$instanceExists" == "0" && "$RETVAL_DICT" == "93" ]]; then
    runCleaningTask
 fi
 logEndAct "Create/Copy Proxy section completed!"
+chown -R datasunrise:datasunrise $DSROOT/logs
 STP_END_TS=$(date +%s)
 STP_ELAPSED=$(($STP_END_TS-$STP_BGN_TS))
 logEndAct "DataSunrise Setup finished in $STP_ELAPSED sec"

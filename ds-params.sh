@@ -14,7 +14,7 @@ logSeparator() {
 
 log() {
   logTimestamp
-  echo -ne "$INST_CAPT: $@\n" | tee -a $PREP_LOG
+  echo -ne "$INST_CAPT $@\n" | tee -a $PREP_LOG
 }
 
 logBeginAct() {

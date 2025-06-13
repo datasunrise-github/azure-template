@@ -199,6 +199,31 @@
             "metadata": {
                 "description": "Target database login password"
             }
+        },
+        "deploymentSource": {
+            "type": "string",
+            "defaultValue": "public",
+            "allowedValues": [
+                "public",
+                "private"
+            ],
+            "metadata": {
+                "description": "Source of deployment scripts - public uses GitHub, private uses Storage Account"
+            }
+        },
+        "privateStorageAccountName": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Storage account name containing deployment scripts (required for private deployment)"
+            }
+        },
+        "privateStorageContainerName": {
+            "type": "string",
+            "defaultValue": "deployment-scripts",
+            "metadata": {
+                "description": "Container name in storage account containing scripts"
+            }
         }
     },
     "variables": {
@@ -223,7 +248,7 @@
         "loadBalancerNamePublic": "[concat(parameters('deploymentPrefix'), 'LoadBalancerPublic')]",
         "loadBalancerNamePrivate": "[concat(parameters('deploymentPrefix'), 'LoadBalancerPrivate')]",
         "loadBalancerProbeName": "DSLBHealthProbe",
-        "loadBalancerPublicIPName": "DSLB-ip",
+        "loadBalancerPublicIPName": "[concat(parameters('deploymentPrefix'),'-DSLB-ip')]",
         "loadBalancerSKUName": "Standard",
         "location": "[resourceGroup().location]",
         "managedIdentityName": "[concat(parameters('deploymentPrefix'), '-datasunrise-uai')]",
@@ -238,7 +263,19 @@
         "virtualNetworkLink": "virtualNetworkLink",
         "vmNameScale": "VMScale",
         "vmScaleSetName": "[concat(parameters('deploymentPrefix'),'-datasunrise-vmss')]",
-        "vmAutoScaleSettings": "[concat(parameters('deploymentPrefix'), 'AutoScaleSettings')]"
+        "vmAutoScaleSettings": "[concat(parameters('deploymentPrefix'), 'AutoScaleSettings')]",
+        "publicScriptUrls": [
+            "https://raw.githubusercontent.com/datasunrise-github/azure-template/main/ds-params.sh",
+            "https://raw.githubusercontent.com/datasunrise-github/azure-template/main/ds-pre-setup.sh",
+            "https://raw.githubusercontent.com/datasunrise-github/azure-template/main/ds-setup.sh",
+            "https://raw.githubusercontent.com/datasunrise-github/azure-template/main/ds-install.sh"
+        ],
+        "privateScriptUrls": [
+            "[concat('https://', parameters('privateStorageAccountName'), '.blob.core.windows.net/', parameters('privateStorageContainerName'), '/ds-params.sh')]",
+            "[concat('https://', parameters('privateStorageAccountName'), '.blob.core.windows.net/', parameters('privateStorageContainerName'), '/ds-pre-setup.sh')]",
+            "[concat('https://', parameters('privateStorageAccountName'), '.blob.core.windows.net/', parameters('privateStorageContainerName'), '/ds-setup.sh')]",
+            "[concat('https://', parameters('privateStorageAccountName'), '.blob.core.windows.net/', parameters('privateStorageContainerName'), '/ds-install.sh')]"
+        ]
     },
     "resources": [
         {
@@ -343,6 +380,21 @@
             ],
             "properties": {
                 "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('managedIdentityName')), '2018-11-30').principalId]",
+                "scope": "[resourceGroup().id]",
+                "principalType": "ServicePrincipal"
+            }
+        },
+        {
+            "condition": "[equals(parameters('deploymentSource'), 'private')]",
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2022-04-01",
+            "name": "[guid(resourceGroup().id, 'storage-blob-reader', parameters('privateStorageAccountName'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('managedIdentityName'))]"
+            ],
+            "properties": {
+                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1')]",
                 "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('managedIdentityName')), '2018-11-30').principalId]",
                 "scope": "[resourceGroup().id]",
                 "principalType": "ServicePrincipal"
@@ -841,15 +893,11 @@
                                     "typeHandlerVersion": "2.1",
                                     "autoUpgradeMinorVersion": true,
                                     "settings": {
-                                        "fileUris": [
-                                            "https://raw.githubusercontent.com/datasunrise-github/azure-template/main/ds-params.sh",
-                                            "https://raw.githubusercontent.com/datasunrise-github/azure-template/main/ds-pre-setup.sh",
-                                            "https://raw.githubusercontent.com/datasunrise-github/azure-template/main/ds-setup.sh",
-                                            "https://raw.githubusercontent.com/datasunrise-github/azure-template/main/ds-install.sh"
-                                        ]
+                                        "fileUris": "[if(equals(parameters('deploymentSource'), 'public'), variables('publicScriptUrls'), variables('privateScriptUrls'))]"
                                     },
                                     "protectedSettings": {
-                                        "commandToExecute": "[concat('./ds-install.sh ', variables('azureIdentity'),' \"',parameters('linkToDSBuild'),'\" \"', variables('DictionaryDatabaseType'),'\" ',reference(resourceId('Microsoft.DBforPostgreSQL/flexibleServers/', variables('DictionaryServerName'))).fullyQualifiedDomainName, ' ', variables('DictionaryDatabasePort'), ' \"', parameters('DictionaryDatabaseName'), '\" ', parameters('DictionaryDatabaseAdministratorLogin'), ' \"', variables('AuditDatabaseType'), '\" ',reference(resourceId('Microsoft.DBforPostgreSQL/flexibleServers/',variables('AuditServerName'))).fullyQualifiedDomainName, ' ', variables('AuditDatabasePort'), ' \"', parameters('AuditDatabaseName'), '\" \"', parameters('AuditDatabaseAdministratorLogin'), '\" \"', variables('ds_serverName'), '\" \"', variables('keyVaultName'),'\" \"',variables('TargetDBInstanceName'),'\" \"',parameters('TargetDBPort'),'\" \"', parameters('TargetDBType'),'\" \"',parameters('TargetDBHost'),'\" \"', parameters('TargetDBName'),'\" \"', parameters('TargetDBLogin'),'\" ','2>&1 | tee -a /tmp/ds-install-output.log')]"
+                                        "commandToExecute": "[concat('./ds-install.sh ', variables('azureIdentity'),' \"',parameters('linkToDSBuild'),'\" \"', variables('DictionaryDatabaseType'),'\" ',reference(resourceId('Microsoft.DBforPostgreSQL/flexibleServers/', variables('DictionaryServerName'))).fullyQualifiedDomainName, ' ', variables('DictionaryDatabasePort'), ' \"', parameters('DictionaryDatabaseName'), '\" ', parameters('DictionaryDatabaseAdministratorLogin'), ' \"', variables('AuditDatabaseType'), '\" ',reference(resourceId('Microsoft.DBforPostgreSQL/flexibleServers/',variables('AuditServerName'))).fullyQualifiedDomainName, ' ', variables('AuditDatabasePort'), ' \"', parameters('AuditDatabaseName'), '\" \"', parameters('AuditDatabaseAdministratorLogin'), '\" \"', variables('ds_serverName'), '\" \"', variables('keyVaultName'),'\" \"',variables('TargetDBInstanceName'),'\" \"',parameters('TargetDBPort'),'\" \"', parameters('TargetDBType'),'\" \"',parameters('TargetDBHost'),'\" \"', parameters('TargetDBName'),'\" \"', parameters('TargetDBLogin'),'\" ','2>&1 | tee -a /tmp/ds-install-output.log')]",
+                                        "managedIdentity": {"clientId" : "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities',variables('managedIdentityName'))).clientId]"}
                                     }
                                 }
                             }

@@ -1,10 +1,31 @@
 #!/bin/bash
 ds_connect() {
-    "$DSROOT"/cmdline/executecommand.sh connect -host `hostname` -port 11000 -login admin -password $ds_admin_password
+    "$DSROOT"/cmdline/executecommand.sh connect -port 11000 -login admin -password $ds_admin_password
 }
 
 resetDict() {
   HOST=`hostname -i`
+  rm -f "$DSROOT"/lock.db
+  log "Try to restore configuration from Dictionary..."
+  LD_LIBRARY_PATH="$DSROOT":"$DSROOT/lib":$LD_LIBRARY_PATH AF_HOME="$AF_HOME" AF_CONFIG="$AF_CONFIG" $DSROOT/AppBackendService RESTORE_LOCAL_SETTINGS_BY_NAME=`hostname` \
+  DICTIONARY_TYPE=$dictionary_type \
+  DICTIONARY_HOST=$dictionary_database_host \
+  DICTIONARY_PORT=$dictionary_database_port \
+  DICTIONARY_DB_NAME=$dictionary_name \
+  DICTIONARY_LOGIN=$dictionary_database_login \
+  DICTIONARY_AZ_KV=$key_vault_name \
+  DICTIONARY_AZKV_SECRET=dsSecretDictionaryAdminPassword 
+  
+  restore_result=$?
+  log "Restore Local Settings Result - $restore_result"
+  chown datasunrise:datasunrise "$DSROOT"/lock.db
+  if [ "$restore_result" == "103" ]; then
+    log "Restore configuration done"
+    COPY_PROXIES_NOT_REQ=1
+    return 0
+  fi
+  log "Restore not successful, return to the main route"
+  
   LD_LIBRARY_PATH="$DSROOT":"$DSROOT/lib":$LD_LIBRARY_PATH AF_HOME="$AF_HOME" AF_CONFIG="$AF_CONFIG" $DSROOT/AppBackendService CLEAN_LOCAL_SETTINGS \
   PRINT_PROGRESS \
   REMOVE_SERVER_BY_HOST_PORT=1 \
@@ -13,7 +34,8 @@ resetDict() {
   DICTIONARY_PORT=$dictionary_database_port \
   DICTIONARY_DB_NAME=$dictionary_name \
   DICTIONARY_LOGIN=$dictionary_database_login \
-  DICTIONARY_PASS=$dictionary_database_password \
+  DICTIONARY_AZ_KV=$key_vault_name \
+  DICTIONARY_AZKV_SECRET=dsSecretDictionaryAdminPassword \
   FIREWALL_SERVER_NAME=`hostname` \
   FIREWALL_SERVER_HOST=$HOST \
   FIREWALL_SERVER_BACKEND_PORT=11000 \
@@ -39,7 +61,9 @@ resetAudit() {
   AuditDatabasePort=$audit_database_port \
   AuditDatabaseName=$audit_database_name \
   AuditLogin=$audit_database_login \
-  AuditPassword=$audit_database_password 
+  AuditPasswordVaultType=3 \
+  AuditAzureKeyVault=$key_vault_name \
+  AuditAzureSecretID=dsSecretAuditAdminPassword 
 }
 
 setupProxy() {
@@ -86,13 +110,19 @@ checkInstanceExists() {
 }
 
 copyProxies() {
-  logBeginAct "Copy Proxies"
-  service datasunrise stop
-  LD_LIBRARY_PATH="$DSROOT":"$DSROOT/lib":$LD_LIBRARY_PATH AF_HOME="$AF_HOME" AF_CONFIG="$AF_CONFIG" $DSROOT/AppBackendService COPY_PROXIES
-  LD_LIBRARY_PATH="$DSROOT":"$DSROOT/lib":$LD_LIBRARY_PATH AF_HOME="$AF_HOME" AF_CONFIG="$AF_CONFIG" $DSROOT/AppBackendService COPY_TRAILINGS
-  service datasunrise start
-  sleep 5
-  logEndAct "Copy Proxies finished"
+  log "COPY_PROXIES_NOT_REQ value is $COPY_PROXIES_NOT_REQ"
+  if [ "$COPY_PROXIES_NOT_REQ" == "1" ]; then
+    log "Copy Proxies not required"
+    return 0
+  else
+    logBeginAct "Copy Proxies"
+    systemctl stop datasunrise
+    LD_LIBRARY_PATH="$DSROOT":"$DSROOT/lib":$LD_LIBRARY_PATH AF_HOME="$AF_HOME" AF_CONFIG="$AF_CONFIG" $DSROOT/AppBackendService COPY_PROXIES
+    LD_LIBRARY_PATH="$DSROOT":"$DSROOT/lib":$LD_LIBRARY_PATH AF_HOME="$AF_HOME" AF_CONFIG="$AF_CONFIG" $DSROOT/AppBackendService COPY_TRAILINGS
+    systemctl start datasunrise
+    sleep 5
+    logEndAct "Copy Proxies finished"
+  fi
 }
 
 setupCleaningTask() {
@@ -126,9 +156,9 @@ setupAdditionals() {
     LogsDiscFreeSpaceLimit=2048 \
     LogTotalSizeCore=10000 \
     LogTotalSizeBackend=10000 \
-    InstallationType=2 \
     GenerateCrashDump=1 \
-    GenerateCrashDumpBackend=1
+    GenerateCrashDumpBackend=1 \
+    SetupWizardIsDone=1 
   RETVAL=$?
   logEndAct "Set up additional parameters result - $RETVAL"
 }
@@ -154,6 +184,7 @@ cleanSQLite() {
 generateCrashDumps() {
   logBeginAct "Configuring Core Dumps..."
   echo "AF_GENERATE_NATIVE_DUMPS=1" | tee -a /etc/datasunrise.conf
+  echo "AF_INSTALLATION_TYPE=AZURE" | tee -a /etc/datasunrise.conf
   echo "" >> /etc/sysctl.conf
   echo "kernel.core_pattern=core-%e" | tee -a /etc/sysctl.conf
   echo "kernel.core_uses_pid=0" | tee -a /etc/sysctl.conf
